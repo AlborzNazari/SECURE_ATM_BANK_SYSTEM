@@ -500,11 +500,14 @@ def sim_concurrent_withdrawals():
     results = {"success": 0, "failed": 0}
     results_lock = threading.Lock()
  
-    def customer(cid):
-        success = atm.withdraw(account, 20, user=f"Cust-{cid:02d}")
+  # AFTER -- retry loop using constants
+def customer(cid):
+    for attempt in range(DENOMINATION, MAX_WITHDRAWAL + DENOMINATION, DENOMINATION):
+        success = atm.withdraw(account, attempt, user=f"Cust-{cid:02d}")
         with results_lock:
             if success:
                 results["success"] += 1
+                break
             else:
                 results["failed"] += 1
  
